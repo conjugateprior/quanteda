@@ -228,13 +228,13 @@ setMethod("textfile",
 
 
 downloadRemote <- function (i, ignoreMissing) {
-    #  First, check that this is not a URL with an unsupported scheme
+    #  First, check that this is not a URL with an unsupported scheme
     scheme <- stringi::stri_match(i, regex='^([a-z][a-z+.-]*):')[, 2]
     if (!(scheme %in% c('http', 'https', 'ftp'))) {
         stop(paste('Unsupported URL scheme', scheme))
     }
 
-    # If this is a supported-scheme remote URL
+    # If this is a supported-scheme remote URL
     extension <- tools::file_ext(i)
     if (!(extension %in% names(SUPPORTED_FILETYPE_MAPPING))) {
         stop('Remote URL does not end in known extension. Please download the file manually.')
@@ -258,41 +258,41 @@ downloadRemote <- function (i, ignoreMissing) {
 }
 
 listMatchingFiles <- function(x, ignoreMissing=F, lastRound=F) {
-    #  The implementation of listMatchingFiles and listMatchingFile might seem
-    #  very complex, but it was arrived at after a lot of toil. The main design
-    #  decision made here is that the user should be able to pass many
+    #  The implementation of listMatchingFiles and listMatchingFile might seem
+    #  very complex, but it was arrived at after a lot of toil. The main design
+    #  decision made here is that the user should be able to pass many
     #  different types of string to listMatchingFiles and get a consistent result:
     #  a list of local filenames. (One additional wrinkle is that there are two
     #  functions, listMatchingFiles and listMatchingFile. This is to ensure that
-    #  listMatchingFile is only ever called with a length 1 argument, even though
+    #  listMatchingFile is only ever called with a length 1 argument, even though
     #  it can return multiple filenames. For the purposes of this explanation, 
     #  this distinction is elided).
-    #  There are four possible types of values for x
-    #     - a simple filename
-    #     - a remote URL
-    #     - a glob pattern
-    #     - a vector of some combination of the above
-    #  listMatchingFiles has a recursive design, because  some of these 
+    #  There are four possible types of values for x
+    #     - a simple filename
+    #     - a remote URL
+    #     - a glob pattern
+    #     - a vector of some combination of the above
+    #  listMatchingFiles has a recursive design, because  some of these 
     #  arguments can resolve to arguments which need further processing: e.g.
     #  a remote URL could resolve to a zip file which needs to be extracted.
     #  The termination condition for the recursion is when the argument passed
-    #  is a local filepath which refers to a single file and needs no further
+    #  is a local filepath which refers to a single file and needs no further
     #  processing, e.g. something like '/path/to/text.tsv'. However, it is not
-    #  possible to determine if a given argument is a path to a single file 
+    #  possible to determine if a given argument is a path to a single file 
     #  or a glob pattern which matches multiple files, without actually trying
-    #  the match. This matters because if it's the result of a globbing expression,
+    #  the match. This matters because if it's the result of a globbing expression,
     #  then it could potentially need further processing, but if it's not, it the recursion
     #  needs to end. We can't know beforehand because the rules for globbing are 
     #  implementation-dependent (systems might treat '/path/to/file\*.tsv' as
     #  either a filename or a path depending on  whether they support escaping
     #  of glob wildcards. We could have tested the return value from Sys.glob
     #  to see whether the system treats a given string as a glob pattern or a 
-    #  simple filename. Unfortunately, Sys.glob() will return character(0)
-    #  for either a glob pattern which matches no files, or a non-glob filename
+    #  simple filename. Unfortunately, Sys.glob() will return character(0)
+    #  for either a glob pattern which matches no files, or a non-glob filename
     #  for a file that doesn't exist, so that doesn't work either.
-    #  We also can't test whether a pattern is a regular file by looking at the
-    #  extension, because '/path/to/*.zip' is a glob expression with a 'zip'
-    #  extension.
+    #  We also can't test whether a pattern is a regular file by looking at the
+    #  extension, because '/path/to/*.zip' is a glob expression with a 'zip'
+    #  extension.
 
     if (!(ignoreMissing || (length(x) > 0))) {
        stop("File does not exist.")
@@ -332,7 +332,7 @@ extractArchive <- function(i, ignoreMissing) {
 listMatchingFile <- function(x, ignoreMissing, verbose=F, lastRound) {
 
     filenames <- c()
-    #  Remove 'file' scheme
+    #  Remove 'file' scheme
     i <- stringi::stri_replace(x, replacement ='', regex='^file://')
 
     scheme <- stringi::stri_match(i, regex='^([a-z][a-z+.-]*):')[, 2]
@@ -340,7 +340,7 @@ listMatchingFile <- function(x, ignoreMissing, verbose=F, lastRound) {
     # If not a URL (or a file:// URL) , treat it as a local file
     if (!is.na(scheme)) {
         if (verbose) print('Remote file')
-        #  If there is a non-'file' scheme, treat it as remote
+        #  If there is a non-'file' scheme, treat it as remote
         localfile <- downloadRemote(i, ignoreMissing=ignoreMissing)
         return(listMatchingFiles(localfile, ignoreMissing=ignoreMissing))
     }
@@ -356,8 +356,8 @@ listMatchingFile <- function(x, ignoreMissing, verbose=F, lastRound) {
         return(listMatchingFiles(archiveFiles, ignoreMissing=ignoreMissing))
     }
 
-    #  At this point, it may be a simple local file or a glob pattern, but as
-    #  above, we have no way of telling a priori whether this is the case
+    #  At this point, it may be a simple local file or a glob pattern, but as
+    #  above, we have no way of telling a priori whether this is the case
     if (lastRound) {
         #  We get to this point if the path wasn't to some file that needed
         #  special treatment (zip, remote, etc.) and it was treated as a glob
@@ -368,7 +368,7 @@ listMatchingFile <- function(x, ignoreMissing, verbose=F, lastRound) {
         return(i)
     }
     else {
-        #  If it wasn't a glob pattern last time, then it may be this time
+        #  If it wasn't a glob pattern last time, then it may be this time
         if (verbose) print('possible glob pattern')
         i <- Sys.glob(i)
         return(
@@ -443,7 +443,7 @@ get_csv <- function(path, textField, ...) {
 
 
 #  Dispatch to get_json_object or get_json_tweets depending on whether 
-#  it looks like a twitter json file
+#  it looks like a twitter json file
 get_json <- function(path, textField, encoding, ...) {
     # encoding param is not used
     stopifnot(file.exists(path))
@@ -613,7 +613,7 @@ docvars.corpusSource <- function(x, field = NULL) {
 
 mktemp <- function(prefix='tmp.', base_path=NULL, directory=F) {
     #  Create a randomly-named temporary file or directory, sort of like
-    #  https://www.mktemp.org/manual.html
+    #  https://www.mktemp.org/manual.html
     if (is.null(base_path))
         base_path <- tempdir()
 
